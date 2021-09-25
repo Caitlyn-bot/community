@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
 
 /**
+ * 用户
  * @author 张志伟
  * @version v1.0
  */
