@@ -13,27 +13,30 @@ public class Comment {
     private int entityId;
     private int targetId;
     private String content;
+    private int status;
     private Date createTime;
 
     public Comment() {
     }
 
-    public Comment(int userId, int entityType, int entityId, int targetId, String content, Date createTime) {
+    public Comment(int userId, int entityType, int entityId, int targetId, String content, int status, Date createTime) {
         this.userId = userId;
         this.entityType = entityType;
         this.entityId = entityId;
         this.targetId = targetId;
         this.content = content;
+        this.status = status;
         this.createTime = createTime;
     }
 
-    public Comment(int id, int userId, int entityType, int entityId, int targetId, String content, Date createTime) {
+    public Comment(int id, int userId, int entityType, int entityId, int targetId, String content, int status, Date createTime) {
         this.id = id;
         this.userId = userId;
         this.entityType = entityType;
         this.entityId = entityId;
         this.targetId = targetId;
         this.content = content;
+        this.status = status;
         this.createTime = createTime;
     }
 
@@ -85,6 +88,14 @@ public class Comment {
         this.content = content;
     }
 
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
     public Date getCreateTime() {
         return createTime;
     }
@@ -102,6 +113,7 @@ public class Comment {
                 ", entityId=" + entityId +
                 ", targetId=" + targetId +
                 ", content='" + content + '\'' +
+                ", status=" + status +
                 ", createTime=" + createTime +
                 '}';
     }
