@@ -2,7 +2,10 @@ package com.zzw.community.controller;
 
 import com.zzw.community.annotation.LoginRequired;
 import com.zzw.community.entity.User;
+import com.zzw.community.service.FollowService;
+import com.zzw.community.service.LikeService;
 import com.zzw.community.service.UserService;
+import com.zzw.community.utils.CommunityConstant;
 import com.zzw.community.utils.CommunityUtil;
 import com.zzw.community.utils.HostHolder;
 import org.apache.commons.lang3.StringUtils;
@@ -30,7 +33,7 @@ import java.io.OutputStream;
  */
 @Controller
 @RequestMapping("/user")
-public class UserController {
+public class UserController implements CommunityConstant {
 
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
@@ -45,6 +48,12 @@ public class UserController {
     private UserService userService;
 
     @Autowired
+    private LikeService likeService;
+
+    @Autowired
+    private FollowService followService;
+
+    @Autowired
     private HostHolder hostHolder;
 
     @LoginRequired
@@ -53,6 +62,12 @@ public class UserController {
         return "/site/setting";
     }
 
+    /**
+     * 上传头像
+     * @param headerImage
+     * @param model
+     * @return
+     */
     @LoginRequired
     @RequestMapping(path = "/upload",method = RequestMethod.POST)
     public String uploadHeader(MultipartFile headerImage, Model model){
@@ -87,6 +102,11 @@ public class UserController {
         return "redirect:/index";
     }
 
+    /**
+     * 加载头像
+     * @param fileName
+     * @param response
+     */
     @RequestMapping(path = "/header/{fileName}",method = RequestMethod.GET)
     public void getHeader(@PathVariable("fileName")String fileName, HttpServletResponse response){
         //服务器存放路径
@@ -111,6 +131,14 @@ public class UserController {
             logger.error("读取头像失败：" + e.getMessage());
         }
     }
+
+    /**
+     * 修改密码
+     * @param oldPassword
+     * @param newPassword
+     * @param model
+     * @return
+     */
     @RequestMapping(path = "/updatePassword",method = RequestMethod.POST)
     public String updatePassword(String oldPassword,String newPassword,Model model){
         if (oldPassword == null){
@@ -129,6 +157,35 @@ public class UserController {
         }
         userService.updatePassword(user.getId(),CommunityUtil.md5(newPassword + user.getSalt()));
         return "redirect:/logout";
+    }
+
+    @RequestMapping(path = "/profile/{userId}",method = RequestMethod.GET)
+    public String getProfilePage(@PathVariable("userId")int userId,Model model){
+        User user = userService.findUserById(userId);
+        if (user == null){
+            throw new RuntimeException("该用户不存在");
+        }
+        //用户的基本信息
+        model.addAttribute("user",user);
+
+        //获取用户的被赞数量
+        int likeCount = likeService.findUserLikeCount(user.getId());
+        model.addAttribute("likeCount",likeCount);
+
+        //关注数量
+        long followeeCount = followService.findFolloweeCount(user.getId(), ENTITY_TYPE_USER);
+        model.addAttribute("followeeCount",followeeCount);
+        //粉丝数量
+        long followerCount = followService.findFollowerCount(ENTITY_TYPE_USER, user.getId());
+        model.addAttribute("followerCount",followerCount);
+        //是否已关注
+        boolean hasFollowed = false;
+        if (hostHolder.getUser() != null){
+            hasFollowed = followService.hasFollowed(hostHolder.getUser().getId(),ENTITY_TYPE_USER,user.getId());
+        }
+        model.addAttribute("hasFollowed",hasFollowed);
+
+        return "/site/profile";
     }
 
 }
