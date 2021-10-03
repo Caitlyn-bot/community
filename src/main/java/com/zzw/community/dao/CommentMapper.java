@@ -39,5 +39,11 @@ public interface CommentMapper {
      */
     int insertComment(Comment comment);
 
+    /**
+     * 根据id查找comment
+     * @param id
+     * @return
+     */
+    Comment selectCommentById(int id);
 
 }

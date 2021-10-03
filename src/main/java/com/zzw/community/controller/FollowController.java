@@ -1,7 +1,9 @@
 package com.zzw.community.controller;
 
+import com.zzw.community.entity.Event;
 import com.zzw.community.entity.Page;
 import com.zzw.community.entity.User;
+import com.zzw.community.event.EventProducer;
 import com.zzw.community.service.FollowService;
 import com.zzw.community.service.UserService;
 import com.zzw.community.utils.CommunityConstant;
@@ -32,17 +34,41 @@ public class FollowController implements CommunityConstant {
     private UserService userService;
 
     @Autowired
+    private EventProducer eventProducer;
+
+    @Autowired
     private HostHolder hostHolder;
 
+    /**
+     * 关注
+     * @param entityType
+     * @param entityId
+     * @return
+     */
     @RequestMapping(path = "/follow",method = RequestMethod.POST)
     @ResponseBody
     public String follow(int entityType,int entityId){
         User user = hostHolder.getUser();
 
+        Event event = new Event()
+                .setTopic(TOPIC_FOLLOW)
+                .setUserId(user.getId())
+                .setEntityType(entityType)
+                .setEntityId(entityId)
+                .setEntityUserId(entityId);
+        eventProducer.fireEvent(event);
+
+
         followService.follow(user.getId(), entityType, entityId);
         return CommunityUtil.getJSONString(0,"已关注");
     }
 
+    /**
+     * 取消关注
+     * @param entityType
+     * @param entityId
+     * @return
+     */
     @RequestMapping(path = "/unfollow",method = RequestMethod.POST)
     @ResponseBody
     public String unFollow(int entityType,int entityId){
